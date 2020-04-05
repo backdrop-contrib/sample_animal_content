@@ -15,6 +15,11 @@ Content type = Animals
 - field: Image (images included for most nodes)
 - field: Link 
 
+Vocabulary = Class
+- term: Aves
+- term: Mammalia
+- term: Reptilia
+
 Nodes included:
 - Elephants
 - Fox
