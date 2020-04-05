@@ -3,8 +3,8 @@ Sample Animal Content
 
 DESCRIPTION
 -----------
-This is a simple module that loads some sample nodes upon installation using
-content from Wikipedia about a handful of animals. 
+This is a simple module that creates an 'animal' content type and a handful of sample nodes
+for a Backdrop CMS site. Mostly useful for theming or development. Uses content from Wikipedia. 
 
 Includes:
 
