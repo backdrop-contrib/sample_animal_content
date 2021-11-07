@@ -1,3 +1,12 @@
 <p>Foxes are small-to-medium-sized, omnivorous mammals belonging to several genera of the family Canidae. Foxes have a flattened skull, upright triangular ears, a pointed, slightly upturned snout, and a long bushy tail (or brush).</p>
 
+<h3>Phylogenetic relationships</h3>
+
+<p>Within the Canidae, the results of DNA analysis shows several phylogenetic divisions:</p>
+
+<ul>
+	<li>The fox-like canids, which include the kit fox (<em>Vulpes velox</em>), <a href="https://en.wikipedia.org/wiki/Red_fox">red fox</a>&nbsp;(<em>Vulpes vulpes</em>), Cape fox (<em>Vulpes chama</em>), Arctic fox&nbsp;(<em>Vulpes lagopus</em>), and fennec fox (<em>Vulpes zerda</em>).</li>
+	<li>The wolf-like canids, (genus&nbsp;<em>Canis</em>,&nbsp;<em>Cuon</em>&nbsp;and&nbsp;<em>Lycaon</em>) including the dog <em>(Canis lupus familiaris)</em>, gray wolf (<em>Canis lupus</em>), red wolf (<em>Canis rufus</em>), eastern wolf (<em>Canis lycaon</em>), coyote (<em>Canis latrans</em>), golden jackal (<em>Canis aureus</em>), Ethiopian wolf&nbsp;(<em>Canis simensis</em>), black-backed jackal (<em>Canis mesomelas</em>), side-striped jackal (<em>Canis adustus</em>), (<em>Cuon alpinus</em>), and African wild dog (<em>Lycaon pictus</em>).</li>
+</ul>
+
 <p>Twelve species belong to the monophyletic "true foxes" group of genus Vulpes. Approximately another 25 current or extinct species are always or sometimes called foxes; these foxes are either part of the paraphyletic group of the South American foxes, or of the outlying group, which consists of bat-eared fox, gray fox, and island fox.[1] Foxes live on every continent except Antarctica. By far the most common and widespread species of fox is the red fox (Vulpes vulpes) with about 47 recognized subspecies.[2] The global distribution of foxes, together with their widespread reputation for cunning, has contributed to their prominence in popular culture and folklore in many societies around the world. The hunting of foxes with packs of hounds, long an established pursuit in Europe, especially in the British Isles, was exported by European settlers to various parts of the New World.</p>
