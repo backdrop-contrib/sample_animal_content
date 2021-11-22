@@ -33,7 +33,8 @@
     ));
     taxonomy_term_save($term);
 
-
+    // Create content type 
+    
     $type = array(
         'type' => 'animals',
         'name' => st('Animals'),
@@ -67,6 +68,8 @@
       ->save();
 
     cache_clear_all();
+    
+    // Create Fields
 
     $field = array(
       'field_name' => 'field_animals_tags',
