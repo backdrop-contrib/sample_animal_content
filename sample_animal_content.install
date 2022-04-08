@@ -1,455 +1,209 @@
 <?php
+/**
+ * @file
+ * Install, update, and uninstall functions for the Sample Animal Content
+ * module.
+ */
 
-  function sample_animal_content_install() {
+/**
+ * Implements hook_install().
+ */
+function sample_animal_content_install() {
+  $animals = sample_animal_content_list();
+  $module_path = backdrop_get_path('module', 'sample_animal_content');
+  $image_directory = 'public://sample_animal_images';
+  file_prepare_directory($image_directory, FILE_CREATE_DIRECTORY);
+  $t = get_t();
 
-    // Create a vocabulary and some terms
+  // Create a vocabulary and terms.
+  $vocabulary = new TaxonomyVocabulary(array(
+    'name' => $t('Class'),
+    'machine_name' => 'animal_class',
+  ));
+  taxonomy_vocabulary_save($vocabulary);
 
-    $vocabulary = new TaxonomyVocabulary(array(
-      'name' => 'Class',
-      'description' => '',
-      'machine_name' => 'animal_class',
-    ));
-    taxonomy_vocabulary_save($vocabulary);
-
+  foreach (array_unique(array_column($animals, 'class')) as $class) {
     $term = entity_create('taxonomy_term', array(
-      'name' => 'Mammalia',
-      'description' => '',
-      'format' => 1,
+      'name' => $class,
       'vocabulary' => 'animal_class',
     ));
     taxonomy_term_save($term);
-    $term = entity_create('taxonomy_term', array(
-      'name' => 'Reptilia',
-      'description' => '',
-      'format' => 1,
-      'vocabulary' => 'animal_class',
-    ));
-    taxonomy_term_save($term);
-    $term = entity_create('taxonomy_term', array(
-      'name' => 'Aves',
-      'description' => '',
-      'format' => 1,
-      'vocabulary' => 'animal_class',
-    ));
-    taxonomy_term_save($term);
+  }
 
-    // Create content type 
-    
-    $type = array(
-        'type' => 'animals',
-        'name' => st('Animals'),
-        'base' => 'node_content',
-        'description' => st("My favorite animals."),
+  // Create a content type.
+  $type = (object) array(
+    'type' => 'animal',
+    'name' => $t('Animal'),
+    'description' => $t('My favorite animals.'),
+    'settings' => array(
+      'scheduling_enabled' => FALSE,
+      'sticky_enabled' => FALSE,
+      'promote_default' => TRUE,
+      'node_submitted' => FALSE,
+      'node_user_picture' => FALSE,
+      'menu_options' => array('main-menu'),
+    ),
+    'is_new' => TRUE,
+  );
+  node_type_save($type);
+  config_set('path.settings', 'node_animal_pattern', 'animals/[node:title]');
+  cache_clear_all();
+
+  // 'Image' field.
+  $instance = array(
+    'field_name' => 'field_image',
+    'label' => $t('Image'),
+    'entity_type' => 'node',
+    'bundle' => 'animal',
+    'description' => $t('Upload an image of this animal.'),
+    'settings' => array(
+      'file_directory' => 'sample_animal_images',
+      'alt_field' => TRUE,
+    ),
+    'widget' => array(
+      'weight' => -3,
+    ),
+    'display' => array(
+      'default' => array(
         'settings' => array(
-          'status_default' => NODE_PUBLISHED,
-          'promote_enabled' => FALSE,
-          'node_preview' => TRUE,
-          'promote_default' => FALSE,
-          'sticky_enabled' => FALSE,
-          'sticky_default' => FALSE,
-          'revision_enabled' => TRUE,
-          'revision_default' => FALSE,
-          'node_submitted' => FALSE,
-          'node_user_picture' => FALSE,
-          'comment_default' => COMMENT_NODE_CLOSED,
-          'menu_options' => array('main-menu'),
-        ),
-        'is_new' => TRUE,
-    );
-
-    $type = node_type_set_defaults($type);
-    node_type_save($type);
-    node_add_body_field($type);
-
-    // Add default alias for page content types.
-    config('path.settings')
-      ->set('node_page_pattern', '[node:title]')
-      ->set('node_post_pattern', 'animals/[node:title]')
-      ->save();
-
-    cache_clear_all();
-    
-    // Create Fields
-
-    $field = array(
-      'field_name' => 'field_animals_tags',
-      'type' => 'taxonomy_term_reference',
-      // Set cardinality to unlimited for tagging.
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'settings' => array(
-        'allowed_values' => array(
-          array(
-            'vocabulary' => 'tags',
-            'parent' => 0,
-          ),
-        ),
-      ),
-    );
-    field_create_field($field);
-
-    $instance = array(
-      'field_name' => 'field_animals_tags',
-      'entity_type' => 'node',
-      'label' => 'Tags',
-      'bundle' => 'animals',
-      'description' => st('Enter a comma-separated list of words to describe your content.'),
-      'widget' => array(
-        'type' => 'taxonomy_autocomplete',
-        'weight' => -4,
-      ),
-      'display' => array(
-        'default' => array(
-          'type' => 'taxonomy_term_reference_link',
-          'weight' => 10,
-        ),
-        'teaser' => array(
-          'type' => 'taxonomy_term_reference_link',
-          'weight' => 10,
-        ),
-      ),
-    );
-    field_create_instance($instance);
-
-    $field = array(
-      'field_name' => 'field_animal_class',
-      'type' => 'taxonomy_term_reference',
-      // Set cardinality to unlimited for tagging.
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'settings' => array(
-        'allowed_values' => array(
-          array(
-            'vocabulary' => 'animal_class',
-            'parent' => 0,
-          ),
-        ),
-      ),
-    );
-    field_create_field($field);
-
-    $instance = array(
-      'field_name' => 'field_animal_class',
-      'entity_type' => 'node',
-      'label' => 'Class',
-      'bundle' => 'animals',
-      'description' => st('Enter a comma-separated list of words to describe your content.'),
-      'widget' => array(
-        'type' => 'taxonomy_autocomplete',
-        'weight' => -4,
-      ),
-      'display' => array(
-        'default' => array(
-          'type' => 'taxonomy_term_reference_link',
-          'weight' => 10,
-          'label' => 'inline',
-        ),
-        'teaser' => array(
-          'type' => 'taxonomy_term_reference_link',
-          'weight' => 10,
-          'label' => 'inline',
-        ),
-      ),
-    );
-    field_create_instance($instance);
-
-    $field = array(
-      'field_name' => 'field_animals_link',
-      'type' => 'link_field',
-      'cardinality' => '1',
-    );
-    field_create_field($field);
-
-    $instance = array(
-      'field_name' => 'field_animals_link',
-      'entity_type' => 'node',
-      'label' => 'Link',
-      'bundle' => 'animals',
-      'description' => st('A link to the wikipedia page with more content.'),
-      'widget' => array(
-        'weight' => 0,
-        'type' => 'link_field',
-        'module' => 'link',
-        'active' => 0,
-        'settings' => [],
-      ),
-      'display' => array(
-        'default' => array(
-          'type' => 'link_default',
-          'weight' => 10,
-          'label' => 'inline',
-        ),
-        'teaser' => array(
-          'type' => 'link_default',
-          'weight' => 10,
-          'label' => 'inline',
-        ),
-      ),
-      'settings' => array(
-          'title' => 'none',
-          'title_value' => '',
-      )
-    );
-    field_create_instance($instance);
-
-    // Many of the following values will be defaulted, they're included here as an illustrative examples.
-    // See https://api.backdropcms.org/api/function/field_create_instance/1
-    $instance = array(
-      'field_name' => 'field_image',
-      'entity_type' => 'node',
-      'label' => 'Image',
-      'bundle' => 'animals',
-      'description' => st('Upload an image to go with this animal.'),
-      'required' => FALSE,
-
-      'settings' => array(
-        'file_directory' => 'field/image',
-        'file_extensions' => 'png gif jpg jpeg',
-        'max_filesize' => '',
-        'max_resolution' => '',
-        'min_resolution' => '',
-        'alt_field' => TRUE,
-        'title_field' => '',
-      ),
-
-      'widget' => array(
-        'type' => 'image_image',
-        'settings' => array(
-          'progress_indicator' => 'throbber',
-          'preview_image_style' => 'thumbnail',
+          'image_style' => 'large',
         ),
         'weight' => -1,
       ),
-
-      'display' => array(
-        'default' => array(
-          'label' => 'hidden',
-          'type' => 'image',
-          'settings' => array('image_style' => 'large', 'image_link' => ''),
-          'weight' => -1,
+      'teaser' => array(
+        'settings' => array(
+          'image_style' => 'medium',
+          'image_link' => 'content',
+          'image_float' => 'right',
         ),
-        'teaser' => array(
-          'label' => 'hidden',
-          'type' => 'image',
-          'settings' => array(
-            'image_style' => 'medium',
-            'image_link' => 'content',
-            'image_float' => 'right',
-          ),
-          'weight' => -1,
+        'weight' => -1,
+      ),
+    ),
+  );
+  field_create_instance($instance);
+
+  // 'Body' fields.
+  $instance = array(
+    'field_name' => 'body',
+    'label' => $t('Body'),
+    'entity_type' => 'node',
+    'bundle' => 'animal',
+    'widget' => array(
+      'weight' => -2,
+    ),
+    'display' => array(
+      'teaser' => array(
+        'type' => 'text_trimmed',
+      ),
+    ),
+  );
+  field_create_instance($instance);
+
+  // 'Class' field.
+  $field = array(
+    'field_name' => 'field_animal_class',
+    'type' => 'taxonomy_term_reference',
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'settings' => array(
+      'allowed_values' => array(
+        array(
+          'vocabulary' => 'animal_class',
+          'parent' => '0',
         ),
       ),
-    );
-    field_create_instance($instance);
+    ),
+  );
+  field_create_field($field);
+  $instance = array(
+    'field_name' => 'field_animal_class',
+    'label' => $t('Class'),
+    'entity_type' => 'node',
+    'bundle' => 'animal',
+    'description' => $t('The taxonomy class this animal belongs to.'),
+    'widget' => array(
+      'type' => 'taxonomy_autocomplete',
+      'weight' => -4,
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'inline',
+      ),
+      'teaser' => array(
+        'label' => 'inline',
+      ),
+    ),
+  );
+  field_create_instance($instance);
 
-    // Create some sample nodes
+  // 'Link' field.
+  $field = array(
+    'field_name' => 'field_animal_link',
+    'type' => 'link_field',
+  );
+  field_create_field($field);
+  $instance = array(
+    'field_name' => 'field_animal_link',
+    'label' => $t('Link'),
+    'entity_type' => 'node',
+    'bundle' => 'animal',
+    'description' => $t('A link to the Wikipedia page with more information about this animal.'),
+    'settings' => array(
+      'title' => 'none',
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'inline',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'inline',
+        'weight' => 10,
+      ),
+    ),
+  );
+  field_create_instance($instance);
 
-    // Make a animal node.
+  // Create animal nodes.
+  foreach ($animals as $name => $animal) {
     $node = new Node();
-
-    // Use the node type you need here, in this case 'post'.
-    $node->type = 'animals';
-    $node->title = 'Elephants';
+    $node->type = 'animal';
+    $node->title = $animal['title'];
     node_object_prepare($node);
     $node->language = LANGUAGE_NONE;
     $node->uid = 1;
-    $node->status = 1;
-    $node->promote = 1;
-    $node->comment = 0;
 
-    // Save your field data.
-    $module_path = backdrop_get_path('module', 'sample_animal_content');
-    $elephant = file_get_contents($module_path . '/animals_txt/elephant.txt');
-    $node->body['und'][] = array('value' => $elephant, 'format' => 'filtered_html');
+    // Class field.
+    $classes = taxonomy_term_load_multiple_by_name($animal['class'], 'animal_class');
+    $class = array_shift($classes);
+    $node->field_animal_class[$node->language][0]['tid'] = $class->tid;
 
-    $image_path = $module_path . '/images/elephant.jpg';
-    $image_object = file_get_contents($image_path);
-    $file = file_save_data($image_object, 'public://', 'elephant.jpg', FILE_EXISTS_RENAME);
-    $file->uid = 1;
-    $node->field_image['und'][0] = (array) $file;
-    $node->field_animal_class['und'][0]['tid'] = '1';
-    $node->field_animals_link['und'][0]['url'] = 'https://en.wikipedia.org/wiki/Elephant';
+    // Image field.
+    if (!isset($animal['image']) || $animal['image'] !== FALSE) {
+      $filename = empty($animal['image']) ? $name . '.jpg' : $animal['image'];
+      $data = file_get_contents($module_path . '/images/' . $filename);
+      $image = file_save_data($data, $image_directory . '/' . $filename, FILE_EXISTS_REPLACE);
+      $image->uid = 1;
+      $node->field_image[$node->language][] = (array) $image;
+    }
 
-    // Save submit and save the node.
-    $node = node_submit($node);
-    node_save($node);
+    // Body field.
+    if (!isset($animal['text']) || $animal['text'] !== FALSE) {
+      $filename = empty($animal['text']) ? $name . '.txt' : $animal['text'];
+      $text = file_get_contents($module_path . '/animals_txt/' . $filename);
+      $node->body[$node->language][] = array(
+        'value' => $text,
+        'format' => 'filtered_html',
+      );
+    }
 
-    // Make a post node.
-    $node = new Node();
+    // Link field.
+    $node->field_animal_link[$node->language][0]['url'] = $animal['link'];
 
-    // Use the node type you need here, in this case 'post'.
-    $node->type = 'animals';
-    $node->title = 'Fox';
-    node_object_prepare($node);
-    $node->language = LANGUAGE_NONE;
-    $node->uid = 1;
-    $node->status = 1;
-    $node->promote = 0;
-    $node->comment = 0;
-
-    // Save your field data.
-    $module_path = backdrop_get_path('module', 'sample_animal_content');
-    $fox = file_get_contents($module_path . '/animals_txt/fox.txt');
-    $node->body['und'][] = array('value' => $fox, 'format' => 'filtered_html');
-
-    $image_path = $module_path . '/images/Fox.jpg';
-    $image_object = file_get_contents($image_path);
-    $file = file_save_data($image_object, 'public://', 'Fox.jpg', FILE_EXISTS_RENAME);
-    $file->uid = 1;
-    $node->field_image['und'][0] = (array) $file;
-    $node->field_animal_class['und'][0]['tid'] = '1';
-    $node->field_animals_link['und'][0]['url'] = 'https://en.wikipedia.org/wiki/Fox';
-
-    // Save submit and save the node.
-    $node = node_submit($node);
-    node_save($node);
-
-    // Make a post node.
-    $node = new Node();
-
-    // Use the node type you need here, in this case 'post'.
-    $node->type = 'animals';
-    $node->title = 'Giraffe';
-    node_object_prepare($node);
-    $node->language = LANGUAGE_NONE;
-    $node->uid = 1;
-    $node->status = 1;
-    $node->promote = 1;
-    $node->comment = 0;
-
-    // Save your field data.
-    $module_path = backdrop_get_path('module', 'sample_animal_content');
-    $giraffe = file_get_contents($module_path . '/animals_txt/giraffe.txt');
-    $node->body['und'][] = array('value' => $giraffe, 'format' => 'filtered_html');
-
-    $image_path = $module_path . '/images/giraffe.jpeg';
-    $image_object = file_get_contents($image_path);
-    $file = file_save_data($image_object, 'public://', 'giraffe.jpeg', FILE_EXISTS_RENAME);
-    $file->uid = 1;
-    $node->field_image['und'][0] = (array) $file;
-    $node->field_animal_class['und'][0]['tid'] = '1';
-    $node->field_animals_link['und'][0]['url'] = 'https://en.wikipedia.org/wiki/Giraffe';
-
-    // Save submit and save the node.
-    $node = node_submit($node);
-    node_save($node);
-
-
-    // Make a post node.
-    $node = new Node();
-
-    // Use the node type you need here, in this case 'post'.
-    $node->type = 'animals';
-    $node->title = 'Lion';
-    node_object_prepare($node);
-    $node->language = LANGUAGE_NONE;
-    $node->uid = 1;
-    $node->status = 1;
-    $node->promote = 1;
-    $node->comment = 0;
-
-    // Save your field data.
-    $module_path = backdrop_get_path('module', 'sample_animal_content');
-    $lion = file_get_contents($module_path . '/animals_txt/lion.txt');
-    $node->body['und'][] = array('value' => $lion, 'format' => 'filtered_html');
-
-    $image_path = $module_path . '/images/Lion.jpg';
-    $image_object = file_get_contents($image_path);
-    $file = file_save_data($image_object, 'public://', 'Lion.jpg', FILE_EXISTS_RENAME);
-    $file->uid = 1;
-    $node->field_image['und'][0] = (array) $file;
-    $node->field_animal_class['und'][0]['tid'] = '1';
-    $node->field_animals_link['und'][0]['url'] = 'https://en.wikipedia.org/wiki/Lion';
-
-    // Save submit and save the node.
-    $node = node_submit($node);
-    node_save($node);
-
-    // Make a post node.
-    $node = new Node();
-
-    // Use the node type you need here, in this case 'post'.
-    $node->type = 'animals';
-    $node->title = 'Llama';
-    node_object_prepare($node);
-    $node->language = LANGUAGE_NONE;
-    $node->uid = 1;
-    $node->status = 1;
-    $node->promote = 0;
-    $node->comment = 0;
-
-    // Save your field data.
-    $module_path = backdrop_get_path('module', 'sample_animal_content');
-    $llama = file_get_contents($module_path . '/animals_txt/llama.txt');
-    $node->body['und'][] = array('value' => $llama, 'format' => 'filtered_html');
-    $node->field_animal_class['und'][0]['tid'] = '1';
-    $node->field_animals_link['und'][0]['url'] = 'https://en.wikipedia.org/wiki/Llama';
-
-    // Save submit and save the node.
-    $node = node_submit($node);
-    node_save($node);
-
-
-
-    // Make a post node.
-    $node = new Node();
-
-    // Use the node type you need here, in this case 'post'.
-    $node->type = 'animals';
-    $node->title = 'Panda';
-    node_object_prepare($node);
-    $node->language = LANGUAGE_NONE;
-    $node->uid = 1;
-    $node->status = 1;
-    $node->promote = 1;
-    $node->comment = 0;
-
-    // Save your field data.
-    $module_path = backdrop_get_path('module', 'sample_animal_content');
-    $panda = file_get_contents($module_path . '/animals_txt/panda.txt');
-    $node->body['und'][] = array('value' => $panda, 'format' => 'filtered_html');
-
-    $image_path = $module_path . '/images/Panda.jpg';
-    $image_object = file_get_contents($image_path);
-    $file = file_save_data($image_object, 'public://', 'Panda.jpg', FILE_EXISTS_RENAME);
-    $file->uid = 1;
-    $node->field_image['und'][0] = (array) $file;
-    $node->field_animal_class['und'][0]['tid'] = '1';
-    $node->field_animals_link['und'][0]['url'] = 'https://en.wikipedia.org/wiki/Giant_panda';
-
-    // Save submit and save the node.
-    $node = node_submit($node);
-    node_save($node);
-
-    // Make a post node.
-    $node = new Node();
-
-    // Use the node type you need here, in this case 'post'.
-    $node->type = 'animals';
-    $node->title = 'Bald Eagle';
-    node_object_prepare($node);
-    $node->language = LANGUAGE_NONE;
-    $node->uid = 1;
-    $node->status = 1;
-    $node->promote = 1;
-    $node->comment = 0;
-
-    // Save your field data.
-    $module_path = backdrop_get_path('module', 'sample_animal_content');
-    $panda = file_get_contents($module_path . '/animals_txt/eagle.txt');
-    $node->body['und'][] = array('value' => $panda, 'format' => 'filtered_html');
-
-    $image_path = $module_path . '/images/eagle.jpg';
-    $image_object = file_get_contents($image_path);
-    $file = file_save_data($image_object, 'public://', 'eagle.jpg', FILE_EXISTS_RENAME);
-    $file->uid = 1;
-    $node->field_image['und'][0] = (array) $file;
-    $node->field_animal_class['und'][0]['tid'] = '3';
-    $node->field_animals_link['und'][0]['url'] = 'https://en.wikipedia.org/wiki/Eagle';
-
-    // Save submit and save the node.
+    // Save the node.
     $node = node_submit($node);
     node_save($node);
   }
 
-
-
-  
+  backdrop_flush_all_caches();
+  backdrop_set_message($t('Sample animal content has been created.'));
+}
