@@ -26,9 +26,9 @@ Nodes included:
 - Giraffe
 - Lion
 - Llama
-- Panda
 - Bald Eagle
-
+- Saltwater Crocodile
+- Giant Panda
 
 LICENSE
 ---------------    
