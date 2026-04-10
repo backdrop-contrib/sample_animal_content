@@ -15,6 +15,10 @@ function sample_animal_content_install() {
   file_prepare_directory($image_directory, FILE_CREATE_DIRECTORY);
   $t = get_t();
 
+  $config = config('sample_animal_content.settings');
+  $tracked_nids = array();
+  $tracked_tids = array();
+
   // Create a vocabulary and terms.
   $vocabulary = new TaxonomyVocabulary(array(
     'name' => $t('Class'),
@@ -28,6 +32,7 @@ function sample_animal_content_install() {
       'vocabulary' => 'animal_class',
     ));
     taxonomy_term_save($term);
+    $tracked_tids[] = $term->tid;
   }
 
   // Create a content type.
@@ -202,7 +207,16 @@ function sample_animal_content_install() {
     // Save the node.
     $node = node_submit($node);
     node_save($node);
+    $tracked_nids[] = $node->nid;
   }
+
+  // Track everything the module created.
+  $config->set('tracked_nids', $tracked_nids);
+  $config->set('tracked_tids', $tracked_tids);
+  $config->set('tracked_content_types', array('animal'));
+  $config->set('tracked_vocabularies', array('animal_class'));
+  $config->set('tracked_fields', array('field_animal_class', 'field_animal_link'));
+  $config->save();
 
   backdrop_flush_all_caches();
   backdrop_set_message($t('Sample animal content has been created.'));

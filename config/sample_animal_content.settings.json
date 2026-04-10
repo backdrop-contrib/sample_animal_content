@@ -1,0 +1,14 @@
+{
+    "_config_name": "sample_animal_content.settings",
+    "tracked_nids": [],
+    "tracked_tids": [],
+    "tracked_cids": [],
+    "tracked_content_types": [],
+    "tracked_vocabularies": [],
+    "tracked_fields": [],
+    "extras_added": {
+        "extra_animals": false,
+        "comments": false,
+        "habitats": false
+    }
+}
