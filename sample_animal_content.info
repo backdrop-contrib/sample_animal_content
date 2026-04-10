@@ -3,3 +3,4 @@ name = Sample Animal Content
 description = Sample content - of the animal variety
 package = Triplo
 backdrop = 1.x
+configure = admin/config/content/sample-animal-content

@@ -5,6 +5,21 @@
  */
 
 /**
+ * Implements hook_menu().
+ */
+function sample_animal_content_menu() {
+  $items['admin/config/content/sample-animal-content'] = array(
+    'title' => 'Sample Animal Content',
+    'description' => 'Add extra sample content such as comments and habitats.',
+    'page callback' => 'backdrop_get_form',
+    'page arguments' => array('sample_animal_content_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'sample_animal_content.admin.inc',
+  );
+  return $items;
+}
+
+/**
  * An array of sample animal content to add to the site.
  *
  * @return array
@@ -65,6 +80,69 @@ function sample_animal_content_list() {
       'title' => $t('Giant Panda'),
       'class' => 'Mammalia',
       'link' => 'https://en.wikipedia.org/wiki/Giant_panda',
+    ),
+  );
+}
+
+/**
+ * Additional animal content available from the config page.
+ *
+ * @return array
+ *   Same structure as sample_animal_content_list().
+ */
+function sample_animal_content_extra_list() {
+  $t = get_t();
+
+  return array(
+    'sea_turtle' => array(
+      'title' => $t('Sea Turtle'),
+      'class' => 'Reptilia',
+      'link' => 'https://en.wikipedia.org/wiki/Sea_turtle',
+    ),
+    'penguin' => array(
+      'title' => $t('Emperor Penguin'),
+      'class' => 'Aves',
+      'link' => 'https://en.wikipedia.org/wiki/Emperor_penguin',
+    ),
+    'dolphin' => array(
+      'title' => $t('Bottlenose Dolphin'),
+      'class' => 'Mammalia',
+      'link' => 'https://en.wikipedia.org/wiki/Bottlenose_dolphin',
+    ),
+    'frog' => array(
+      'title' => $t('Poison Dart Frog'),
+      'class' => 'Amphibia',
+      'link' => 'https://en.wikipedia.org/wiki/Poison_dart_frog',
+    ),
+    'shark' => array(
+      'title' => $t('Great White Shark'),
+      'class' => 'Chondrichthyes',
+      'link' => 'https://en.wikipedia.org/wiki/Great_white_shark',
+    ),
+    'owl' => array(
+      'title' => $t('Great Horned Owl'),
+      'class' => 'Aves',
+      'link' => 'https://en.wikipedia.org/wiki/Great_horned_owl',
+    ),
+    'wolf' => array(
+      'title' => $t('Gray Wolf'),
+      'class' => 'Mammalia',
+      'link' => 'https://en.wikipedia.org/wiki/Wolf',
+    ),
+    'chameleon' => array(
+      'title' => $t('Panther Chameleon'),
+      'class' => 'Reptilia',
+      'link' => 'https://en.wikipedia.org/wiki/Panther_chameleon',
+    ),
+    'octopus' => array(
+      'title' => $t('Common Octopus'),
+      'class' => 'Cephalopoda',
+      'link' => 'https://en.wikipedia.org/wiki/Common_octopus',
+    ),
+    'bear' => array(
+      'title' => $t('Brown Bear'),
+      'class' => 'Mammalia',
+      'link' => 'https://en.wikipedia.org/wiki/Brown_bear',
     ),
   );
 }
