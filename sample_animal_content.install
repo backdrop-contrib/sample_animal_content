@@ -219,7 +219,11 @@ function sample_animal_content_install() {
   $config->save();
 
   backdrop_flush_all_caches();
-  backdrop_set_message($t('Sample animal content has been created.'));
+  backdrop_set_message(format_plural(count($animals), 'Sample animal content has been created: 1 animal.', 'Sample animal content has been created: @count animals.'));
+  backdrop_set_message($t('To add @count more animals, sample comments and habitats, visit the <a href="@url">Sample Animal Content settings page</a>.', array(
+    '@count' => count(sample_animal_content_extra_list()),
+    '@url' => url('admin/config/content/sample-animal-content'),
+  )), 'info');
 }
 
 /**
