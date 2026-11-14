@@ -221,3 +221,75 @@ function sample_animal_content_install() {
   backdrop_flush_all_caches();
   backdrop_set_message($t('Sample animal content has been created.'));
 }
+
+/**
+ * Add the settings config and track sample content from earlier releases.
+ *
+ * Sites installed with 1.x-1.0.3 or earlier have no settings config, so the
+ * extra content options on the settings page cannot find the original animals.
+ * Only nodes and terms whose titles match the module's own sample list are
+ * tracked, so content created by people on the site is left out.
+ */
+function sample_animal_content_update_1000() {
+  $config = config('sample_animal_content.settings');
+  $defaults = array(
+    'tracked_nids' => array(),
+    'tracked_tids' => array(),
+    'tracked_cids' => array(),
+    'tracked_content_types' => array(),
+    'tracked_vocabularies' => array(),
+    'tracked_fields' => array(),
+    'extras_added' => array(
+      'extra_animals' => FALSE,
+      'comments' => FALSE,
+      'habitats' => FALSE,
+    ),
+  );
+  foreach ($defaults as $key => $value) {
+    if ($config->get($key) === NULL) {
+      $config->set($key, $value);
+    }
+  }
+
+  // Track the original sample content, unless tracking already exists.
+  if (!$config->get('tracked_nids')) {
+    $animals = sample_animal_content_list();
+
+    $nids = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('n.type', 'animal')
+      ->condition('n.title', array_column($animals, 'title'), 'IN')
+      ->execute()
+      ->fetchCol();
+    $config->set('tracked_nids', array_map('intval', $nids));
+
+    // Only track class terms used by the sample animals, so duplicate terms
+    // with the same names are left alone.
+    $tids = array();
+    if ($nids && db_table_exists('field_data_field_animal_class')) {
+      $query = db_select('field_data_field_animal_class', 'f');
+      $query->join('taxonomy_term_data', 't', 't.tid = f.field_animal_class_tid');
+      $tids = $query
+        ->fields('t', array('tid'))
+        ->condition('f.entity_type', 'node')
+        ->condition('f.entity_id', $nids, 'IN')
+        ->condition('t.vocabulary', 'animal_class')
+        ->condition('t.name', array_unique(array_column($animals, 'class')), 'IN')
+        ->distinct()
+        ->execute()
+        ->fetchCol();
+    }
+    $config->set('tracked_tids', array_map('intval', $tids));
+
+    if (node_type_get_type('animal')) {
+      $config->set('tracked_content_types', array('animal'));
+    }
+    if (taxonomy_vocabulary_load('animal_class')) {
+      $config->set('tracked_vocabularies', array('animal_class'));
+    }
+    $fields = array_filter(array('field_animal_class', 'field_animal_link'), 'field_info_field');
+    $config->set('tracked_fields', array_values($fields));
+  }
+
+  $config->save();
+}
